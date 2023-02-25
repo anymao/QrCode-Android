@@ -1,0 +1,43 @@
+pluginManagement {
+    repositories {
+        // 配置HMS Core SDK的Maven仓地址。
+        maven {url 'https://developer.huawei.com/repo/'}
+        maven {
+            credentials {
+                username "$ALIYUN_USERNAME"
+                password "$ALIYUN_PASSWORD"
+            }
+            url 'https://packages.aliyun.com/maven/repository/2202395-release-jr0puW/'
+        }
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        // 配置HMS Core SDK的Maven仓地址。
+        maven {url 'https://developer.huawei.com/repo/'}
+        maven {
+            credentials {
+                username "$ALIYUN_USERNAME"
+                password "$ALIYUN_PASSWORD"
+            }
+            url 'https://packages.aliyun.com/maven/repository/2202395-release-jr0puW/'
+        }
+        google()
+        mavenCentral()
+    }
+}
+rootProject.name = "QrCode"
+include ':app'
+include ':qrcode-core'
+include ':zxing'
+//include ':opencv-sdk'
+include ':ml-kit'
+include ':hms'
+//include ':wechat-scanner'
+//def opencvsdk = new File(rootProject.path, "opencv-sdk").path
+include ':wechat-scanner'

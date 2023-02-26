@@ -38,6 +38,8 @@ include ':zxing'
 //include ':opencv-sdk'
 include ':ml-kit'
 include ':hms'
-//include ':wechat-scanner'
-//def opencvsdk = new File(rootProject.path, "opencv-sdk").path
+
+//project(':opencv-sdk').projectDir = file(OPENCV_SDK)
+include ':opencv-android'
+include ':wechat-scanner-impl'
 include ':wechat-scanner'

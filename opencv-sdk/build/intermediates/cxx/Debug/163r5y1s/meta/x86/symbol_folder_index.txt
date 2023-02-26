@@ -1,1 +1,0 @@
-E:\StudioProjects\QrCode\opencv-sdk\build\intermediates\cxx\Debug\163r5y1s\obj\x86

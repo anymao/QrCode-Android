@@ -79,7 +79,7 @@ class QrCodeScanActivity : AppCompatActivity() {
             val executor = Executors.newSingleThreadExecutor {
                 Thread(it,"qrcode-scan-analysis")
             }
-            val analyzer = ServiceLoader.load<BaseAnalyzer>("hms").requireFirstPriority()
+            val analyzer = ServiceLoader.load<BaseAnalyzer>("wechat-scanner").requireFirstPriority()
             imageAnalysis.setAnalyzer(executor,analyzer)
 
             try {

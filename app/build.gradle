@@ -31,14 +31,39 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+
+    flavorDimensions "scan-impl"
+
+    productFlavors {
+        zxing {
+            dimension "scan-impl"
+        }
+        hms {
+            dimension "scan-impl"
+        }
+        mlKit{
+            dimension "scan-impl"
+        }
+        wechatScanner{
+            dimension "scan-impl"
+        }
+        allInOne{
+            dimension "scan-impl"
+        }
+    }
 }
 
 dependencies {
 
     implementation project(":qrcode-core")
-    implementation project(":zxing")
-    implementation project(":ml-kit")
-    implementation project(":hms")
+    zxingImplementation project(":zxing")
+    mlKitImplementation project(":ml-kit")
+    hmsImplementation project(":hms")
+    wechatScannerImplementation project(":wechat-scanner-impl")
+    allInOneImplementation project(":zxing")
+    allInOneImplementation project(":ml-kit")
+    allInOneImplementation project(":hms")
+    allInOneImplementation project(":wechat-scanner-impl")
     implementation 'androidx.core:core-ktx:1.9.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.8.0'

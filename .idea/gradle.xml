@@ -13,8 +13,10 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/hms" />
             <option value="$PROJECT_DIR$/ml-kit" />
+            <option value="$PROJECT_DIR$/opencv-android" />
             <option value="$PROJECT_DIR$/qrcode-core" />
             <option value="$PROJECT_DIR$/wechat-scanner" />
+            <option value="$PROJECT_DIR$/wechat-scanner-impl" />
             <option value="$PROJECT_DIR$/zxing" />
           </set>
         </option>

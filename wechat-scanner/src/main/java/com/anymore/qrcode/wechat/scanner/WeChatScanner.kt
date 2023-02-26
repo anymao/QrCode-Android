@@ -3,28 +3,24 @@ package com.anymore.qrcode.wechat.scanner
 import org.opencv.core.Mat
 import org.opencv.utils.Converters
 
-class WeChatScanner {
+class WeChatScanner(
+    detector_prototxt_path: String,
+    detector_caffe_model_path: String,
+    super_resolution_prototxt_path: String,
+    super_resolution_caffe_model_path: String
+) {
 
     companion object {
         // Used to load the 'scanner' library on application startup.
         init {
-            System.loadLibrary("scanner")
+            System.loadLibrary("wechat_scanner")
         }
     }
     
-    val nativeObjAddr: Long
+    private val nativeObjAddr: Long
 
-    private constructor(addr: Long) {
-        nativeObjAddr = addr
-    }
-
-    constructor(
-        detector_prototxt_path: String,
-        detector_caffe_model_path: String,
-        super_resolution_prototxt_path: String,
-        super_resolution_caffe_model_path: String
-    ) {
-        nativeObjAddr = WeChatQRCode(
+    init {
+        nativeObjAddr = initModels(
             detector_prototxt_path,
             detector_caffe_model_path,
             super_resolution_prototxt_path,
@@ -47,7 +43,7 @@ class WeChatScanner {
         delete(nativeObjAddr)
     }
 
-    external fun WeChatQRCode(
+    private external fun initModels(
         detector_prototxt_path: String,
         detector_caffe_model_path: String,
         super_resolution_prototxt_path: String,

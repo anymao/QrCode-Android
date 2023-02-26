@@ -78,13 +78,13 @@ jobject vector_string_to_List(JNIEnv *env, std::vector<std::string> &vs) {
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_com_anymore_qrcode_wechat_scanner_WeChatScanner_WeChatQRCode(JNIEnv *env, jobject thiz,
-                                                                  jstring detector_prototxt_path,
-                                                                  jstring detector_caffe_model_path,
-                                                                  jstring super_resolution_prototxt_path,
-                                                                  jstring super_resolution_caffe_model_path) {
+Java_com_anymore_qrcode_wechat_scanner_WeChatScanner_initModels(JNIEnv *env, jobject thiz,
+                                                                jstring detector_prototxt_path,
+                                                                jstring detector_caffe_model_path,
+                                                                jstring super_resolution_prototxt_path,
+                                                                jstring super_resolution_caffe_model_path) {
     using namespace cv::wechat_qrcode;
-    static const char method_name[] = "WeChatQRCode_WeChatQRCode";
+    static const char method_name[] = "WeChatScanner_initModels";
     try {
         LOGD("%s", method_name);
         const char *utf_detector_prototxt_path = env->GetStringUTFChars(detector_prototxt_path, 0);
@@ -108,7 +108,7 @@ Java_com_anymore_qrcode_wechat_scanner_WeChatScanner_WeChatQRCode(JNIEnv *env, j
                 utf_super_resolution_caffe_model_path ? utf_super_resolution_caffe_model_path : "");
         env->ReleaseStringUTFChars(super_resolution_caffe_model_path,
                                    utf_super_resolution_caffe_model_path);
-        cv::wechat_qrcode::WeChatQRCode *_retval_ = new cv::wechat_qrcode::WeChatQRCode(
+        auto *_retval_ = new cv::wechat_qrcode::WeChatQRCode(
                 n_detector_prototxt_path, n_detector_caffe_model_path,
                 n_super_resolution_prototxt_path, n_super_resolution_caffe_model_path);
         return (jlong) _retval_;
@@ -128,12 +128,12 @@ Java_com_anymore_qrcode_wechat_scanner_WeChatScanner_detectAndDecode(JNIEnv *env
                                                                      jlong img_nativeObj,
                                                                      jlong points_mat_nativeObj) {
     using namespace cv::wechat_qrcode;
-    static const char method_name[] = "WeChatQRCode_detectAndDecode";
+    static const char method_name[] = "WechatScanner_detectAndDecode";
     try {
         LOGD("%s", method_name);
         std::vector<Mat> points;
         Mat &points_mat = *((Mat *) points_mat_nativeObj);
-        cv::wechat_qrcode::WeChatQRCode *me = (cv::wechat_qrcode::WeChatQRCode *) self;
+        auto *me = (cv::wechat_qrcode::WeChatQRCode *) self;
         Mat &img = *((Mat *) img_nativeObj);
         std::vector<std::string> _ret_val_vector_ = me->detectAndDecode(img, points);
         vector_Mat_to_Mat(points, points_mat);

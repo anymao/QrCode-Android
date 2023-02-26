@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.22.1)
 
 # Declares and names the project.
 
-project("scanner")
+project("wechat-scanner")
 
 # 注意这里的路径，需要和OpenCV sdk的路径对应
 set(ocvlibs "${PROJECT_SOURCE_DIR}/../../../../opencv-android/native/libs")
@@ -53,13 +53,13 @@ aux_source_directory(wechat/zxing/qrcode/detector WZQD2)
 # Gradle automatically packages shared libraries with your APK.
 
 add_library( # Sets the name of the library.
-        scanner
+        wechat_scanner
 
         # Sets the library as a shared library.
         SHARED
 
         # Provides a relative path to your source file(s).
-        scanner.cpp
+        wechat_scanner.cpp
         ${O}
         ${W}
         ${WD}
@@ -91,7 +91,7 @@ find_library( # Sets the name of the path variable.
 # build script, prebuilt third-party libraries, or system libraries.
 
 target_link_libraries( # Specifies the target library.
-        scanner
+        wechat_scanner
 
         # Links the target library to the log library
         # included in the NDK.

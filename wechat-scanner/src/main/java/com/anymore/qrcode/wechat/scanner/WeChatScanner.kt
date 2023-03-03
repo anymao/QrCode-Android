@@ -17,10 +17,10 @@ class WeChatScanner(
         }
     }
     
-    private val nativeObjAddr: Long
+    private val nativeObj: Long
 
     init {
-        nativeObjAddr = initModels(
+        nativeObj = initModels(
             detector_prototxt_path,
             detector_caffe_model_path,
             super_resolution_prototxt_path,
@@ -28,10 +28,10 @@ class WeChatScanner(
         )
     }
 
-    fun detectAndDecode(img: Mat, points: List<Mat>): List<String> {
+    fun detectAndDecode(img: Mat, points: List<Mat>): List<String>? {
         val points_mat = Mat()
         val retVal = detectAndDecode(
-            nativeObjAddr, img.nativeObj, points_mat.nativeObjAddr
+            nativeObj, img.nativeObj, points_mat.nativeObjAddr
         )
         Converters.Mat_to_vector_Mat(points_mat, points)
         points_mat.release()
@@ -40,7 +40,7 @@ class WeChatScanner(
 
     @Throws(Throwable::class)
     protected fun finalize() {
-        delete(nativeObjAddr)
+        delete(nativeObj)
     }
 
     private external fun initModels(
@@ -55,9 +55,9 @@ class WeChatScanner(
         nativeObj: Long,
         img_nativeObj: Long,
         points_mat_nativeObj: Long
-    ): List<String>
+    ): List<String>?
 
 
-    external fun delete(nativeObj: Long)
+    private external fun delete(nativeObj: Long)
 
 }

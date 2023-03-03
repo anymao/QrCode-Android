@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import org.opencv.core.CvType
 import org.opencv.core.Mat
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Created by anymore on 2023/2/26.
@@ -23,13 +24,15 @@ class WeChatAnalyzer : BaseAnalyzer {
 
     companion object {
         private const val TAG = "WeChatAnalyzer"
+
+        @Volatile
         private var initialized = false
         private const val detect_model = "detect.caffemodel"
         private const val sr_model = "sr.caffemodel"
         private const val detect_pro = "detect.prototxt"
         private const val sr_pro = "sr.prototxt"
         private val files = arrayOf(detect_model, sr_model, detect_pro, sr_pro)
-        private val fileMap: MutableMap<String, String> = HashMap(4)
+        private val fileMap: MutableMap<String, String> = ConcurrentHashMap(4)
 
         fun init(context: Context) {
             if (initialized && fileMap.size == files.size) {
@@ -37,34 +40,34 @@ class WeChatAnalyzer : BaseAnalyzer {
                 return
             }
             checkModelFiles(context)
-            initialized = true
         }
 
         @OptIn(DelicateCoroutinesApi::class)
         private fun checkModelFiles(context: Context) {
             GlobalScope.launch(Dispatchers.IO) {
                 val startTime = System.currentTimeMillis()
-                Log.d(TAG, "开始检查模型文件" + Thread.currentThread().name)
+                Log.d(TAG, "开始检查模型文件#" + Thread.currentThread().name)
                 val dir = File(context.filesDir, "wechat-scanner-model")
                 if (!dir.exists()) {
                     if (!dir.mkdirs()) {
                         Log.e(TAG, "创建模型目录失败!")
                         return@launch
                     }
-                    files.forEach {
-                        val file = File(dir, it)
-                        if (!file.exists() || file.length() == 0L) {
-                            Log.d(TAG, "模型文件<$it>需要复制")
-                            file.outputStream().use { os ->
-                                context.assets.open(it).use { `is` ->
-                                    `is`.copyTo(os)
-                                }
+                }
+                files.forEach {
+                    val file = File(dir, it)
+                    if (!file.exists() || file.length() == 0L) {
+                        Log.d(TAG, "模型文件<$it>需要复制")
+                        file.outputStream().use { os ->
+                            context.assets.open(it).use { `is` ->
+                                `is`.copyTo(os)
                             }
                         }
-                        fileMap[it] = file.absolutePath
                     }
+                    fileMap[it] = file.absolutePath
                 }
                 Log.d(TAG, "初始化模型成功，耗时:${System.currentTimeMillis() - startTime} ms")
+                initialized = true
             }
         }
     }
@@ -75,7 +78,7 @@ class WeChatAnalyzer : BaseAnalyzer {
 
     init {
         if (fileMap.size != files.size) {
-            throw IllegalStateException("请先调用WeChatAnalyzer进行初始化")
+            throw IllegalStateException("请先调用WeChatAnalyzer.init(context)进行初始化")
         }
         scanner = WeChatScanner(
             requireNotNull(fileMap[detect_pro]),
@@ -90,10 +93,9 @@ class WeChatAnalyzer : BaseAnalyzer {
     }
 
     override fun analyze(image: ImageProxy) {
-        Log.d("WeChatAnalyzer", "analyze")
         val result = scanner.detectAndDecode(gray(image), ArrayList())
         if (!result.isNullOrEmpty()) {
-            Log.d("WeChatAnalyzer", result.first())
+            Log.d(TAG, result.first())
             callback?.accept(result.first())
         }
         image.close()

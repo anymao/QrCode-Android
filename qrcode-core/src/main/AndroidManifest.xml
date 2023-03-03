@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
     <application>
-        <activity android:name="com.anymore.qrcode.core.QrCodeScanActivity"
+        <activity
+            android:name="com.anymore.qrcode.core.QrCodeScanActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/QrScanActivity"/>
+            android:theme="@style/QrScanActivity" />
     </application>
 </manifest>

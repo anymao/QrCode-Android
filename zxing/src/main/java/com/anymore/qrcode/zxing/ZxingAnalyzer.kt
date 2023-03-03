@@ -9,6 +9,10 @@ import com.google.zxing.*
 import com.google.zxing.common.HybridBinarizer
 import java.nio.ByteBuffer
 import java.util.*
+import kotlin.collections.HashMap
+import kotlin.collections.addAll
+import kotlin.collections.forEachIndexed
+import kotlin.collections.set
 
 
 /**
@@ -17,11 +21,8 @@ import java.util.*
 @AutoService(value = [BaseAnalyzer::class], alias = "zxing")
 class ZxingAnalyzer : BaseAnalyzer {
 
-
-    private val decoder = MultiFormatReader()
-    private var callback: Consumer<String>? = null
-
     companion object {
+        private const val TAG = "ZxingAnalyzer"
         private fun ByteBuffer.toByteArray(): ByteArray {
             rewind()    // Rewind the buffer to zero
             val data = ByteArray(remaining())
@@ -29,7 +30,7 @@ class ZxingAnalyzer : BaseAnalyzer {
             return data // Return the byte array
         }
 
-        private fun ByteArray.toIntArray():IntArray{
+        private fun ByteArray.toIntArray(): IntArray {
             val res = IntArray(size)
             forEachIndexed { index, byte ->
                 res[index] = byte.toInt() and 0xFF
@@ -37,6 +38,10 @@ class ZxingAnalyzer : BaseAnalyzer {
             return res
         }
     }
+
+
+    private val decoder = MultiFormatReader()
+    private var callback: Consumer<String>? = null
 
     init {
 
@@ -58,19 +63,27 @@ class ZxingAnalyzer : BaseAnalyzer {
 
 
     override fun analyze(image: ImageProxy) {
-        Log.d("ZxingAnalyzer", "analyze")
-        val source = RGBLuminanceSource(
-            image.width,
-            image.height,
-            image.planes[0].buffer.toByteArray().toIntArray())
-        val bitmap = BinaryBitmap(HybridBinarizer(source))
         try {
+            val sourceBitmap = image.toBitmap()
+            val w = sourceBitmap.width
+            val h = sourceBitmap.height
+            val pixels = IntArray(w * h)
+            sourceBitmap.getPixels(pixels,0,w,0,0,w,h)
+            sourceBitmap.recycle()
+            val source = RGBLuminanceSource(w, h, pixels)
+            val bitmap = BinaryBitmap(HybridBinarizer(source))
             val result = decoder.decode(bitmap)
-            callback?.accept(result.text)
-            Log.d("ZxingAnalyzer", result.text)
-        }catch (e:Throwable){
-//            Log.e("ZxingAnalyzer","error:",e)
-        }finally {
+            if (!result.text.isNullOrEmpty()) {
+                callback?.accept(result.text)
+            }
+            Log.d(TAG, result.text)
+        } catch (e: Throwable) {
+            if (e is NotFoundException) {
+                Log.d(TAG, "照片中没有发现二维码")
+            } else {
+                Log.e(TAG, "扫码中出现错误:$e")
+            }
+        } finally {
             image.close()
         }
     }

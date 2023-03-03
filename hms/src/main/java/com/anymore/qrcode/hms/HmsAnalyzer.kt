@@ -15,6 +15,11 @@ import com.huawei.hms.mlsdk.common.MLFrame
  */
 @AutoService(value = [BaseAnalyzer::class], alias = "hms")
 class HmsAnalyzer : BaseAnalyzer {
+
+    companion object {
+        private const val TAG = "HmsAnalyzer"
+    }
+
     private val decoder: HmsScanAnalyzer
     private var callback: Consumer<String>? = null
 
@@ -35,8 +40,9 @@ class HmsAnalyzer : BaseAnalyzer {
         task.addOnSuccessListener {
             if (!it.isNullOrEmpty()) {
                 callback?.accept(it.first().originalValue)
-                Log.d("HmsAnalyzer", it.first().originalValue.orEmpty())
             }
+        }.addOnFailureListener {
+            Log.e(TAG, "扫码中出现错误", it)
         }.addOnCompleteListener {
             image.close()
         }

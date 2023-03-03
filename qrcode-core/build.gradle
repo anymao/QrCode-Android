@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-parcelize'
 }
 
 android {
@@ -32,7 +33,7 @@ android {
 
 dependencies {
 
-    api "com.anymore:auto-service-loader:0.0.6"
+    api "com.anymore:auto-service-loader:0.0.7"
     api 'androidx.core:core-ktx:1.9.0'
     api 'androidx.appcompat:appcompat:1.6.1'
     api 'com.google.android.material:material:1.8.0'
@@ -40,7 +41,11 @@ dependencies {
     api "androidx.camera:camera-core:${camerax_version}"
     api "androidx.camera:camera-camera2:${camerax_version}"
     api "androidx.camera:camera-lifecycle:${camerax_version}"
-    api "androidx.camera:camera-video:${camerax_version}"
     api "androidx.camera:camera-view:${camerax_version}"
     api "androidx.camera:camera-extensions:${camerax_version}"
+    api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
+    api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
+    api 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.1'
+    api 'androidx.lifecycle:lifecycle-process:2.5.1'
+
 }

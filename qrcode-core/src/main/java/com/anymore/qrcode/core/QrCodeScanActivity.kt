@@ -1,9 +1,15 @@
 package com.anymore.qrcode.core
 
 import android.Manifest
+import android.app.Service
 import android.content.pm.PackageManager
+import android.media.SoundPool
+import android.os.Build
 import android.os.Bundle
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -14,6 +20,7 @@ import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.anymore.auto.ServiceLoader
+import com.anymore.qrcode.core.view.ViewFinderView
 import java.util.concurrent.Executors
 
 /**
@@ -24,15 +31,31 @@ class QrCodeScanActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "QrCodeScanActivity"
         private const val REQUEST_CODE = 10241
+        const val EXTRA_OPTION = "QrCodeScanActivity.EXTRA_OPTION"
     }
 
     private lateinit var previewView: PreviewView
+    private lateinit var viewFinder: ViewFinderView
+    private lateinit var soundPool: SoundPool
+    private var soundId: Int = -1
+    private var ringReady = false
+    private var implAlias: String = ""
+    private var session: String = ""
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_qr_code_scan)
+        @Suppress("DEPRECATION")
+        val option = intent?.getSerializableExtra(EXTRA_OPTION) as? ScanOption
+        if (option != null) {
+            implAlias = option.implAlias
+            session = option.session
+            Log.d(TAG, "session:$session,使用:$implAlias")
+        }
         previewView = findViewById(R.id.preview_view)
+        viewFinder = findViewById(R.id.view_finder)
+        soundId = initSoundPool()
         if (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.CAMERA
@@ -47,6 +70,14 @@ class QrCodeScanActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        if (!session.isNullOrEmpty()) {
+            ScanManager.unregister(session)
+        }
+        soundPool.release()
+        super.onDestroy()
+    }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -57,6 +88,9 @@ class QrCodeScanActivity : AppCompatActivity() {
             val granted = grantResults.none { it != PackageManager.PERMISSION_GRANTED }
             if (granted) {
                 initCamara()
+            } else {
+                Toast.makeText(this, "必须授予相机权限才能使用此功能", Toast.LENGTH_SHORT).show()
+                finish()
             }
         }
     }
@@ -77,21 +111,63 @@ class QrCodeScanActivity : AppCompatActivity() {
                 .setBackpressureStrategy(STRATEGY_KEEP_ONLY_LATEST)
                 .build()
             val executor = Executors.newSingleThreadExecutor {
-                Thread(it,"qrcode-scan-analysis")
+                Thread(it, "qrcode-scan-analysis")
             }
-            val analyzer = ServiceLoader.load<BaseAnalyzer>("wechat-scanner").requireFirstPriority()
-            imageAnalysis.setAnalyzer(executor,analyzer)
+            val loader =
+                ServiceLoader.load<BaseAnalyzer>(implAlias)
+            val analyzer = loader.requireFirstPriority()
+            analyzer.register {
+                Log.d(TAG, "scan:$it")
+                doScanCompleted()
+                ScanManager.getHandler(session)(this, it)
+            }
+            imageAnalysis.setAnalyzer(executor, analyzer)
 
             try {
                 // Unbind use cases before rebinding
                 cameraProvider.unbindAll()
                 // Bind use cases to camera
-                cameraProvider.bindToLifecycle(this, cameraSelector, preview,imageAnalysis)
+                cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysis)
 
             } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
             }
         }, ContextCompat.getMainExecutor(this))
 
+    }
+
+    private fun initSoundPool(): Int {
+        soundPool = SoundPool.Builder()
+            .setMaxStreams(1).build()
+        val id = soundPool.load(this, R.raw.qrcode_completed, 1)
+        soundPool.setOnLoadCompleteListener { _, sampleId, status ->
+            if (id == sampleId && status == 0) {
+                ringReady = true
+            }
+        }
+        return id
+    }
+
+    private fun doScanCompleted() {
+        if (ringReady && soundId > 0) {
+            soundPool.play(soundId, 1f, 1f, 1, 0, 1f)
+        }
+        vibrate()
+        viewFinder.stopAnimation()
+    }
+
+    @Suppress("DEPRECATION")
+    private fun vibrate() {
+        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val service =
+                getSystemService(Service.VIBRATOR_MANAGER_SERVICE) as? VibratorManager ?: return
+            service.defaultVibrator
+        } else {
+            val service = getSystemService(Service.VIBRATOR_SERVICE) as? Vibrator ?: return
+            service
+        }
+        if (vibrator.hasVibrator()) {
+            vibrator.vibrate(345L)
+        }
     }
 }

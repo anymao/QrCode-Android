@@ -4,7 +4,7 @@
     <application>
         <provider
             android:name=".WeChatScannerInitializer"
-            android:authorities="${applicationId}.wechat.scanner.init"
+            android:authorities="${applicationId}.wechat.scanner.WeChatScannerInitializer"
             android:exported="false" />
     </application>
 </manifest>

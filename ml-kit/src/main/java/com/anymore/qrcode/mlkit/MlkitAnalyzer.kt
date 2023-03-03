@@ -18,6 +18,10 @@ import com.google.mlkit.vision.common.InputImage
 @AutoService(value = [BaseAnalyzer::class], alias = "ml-kit")
 class MlkitAnalyzer : BaseAnalyzer {
 
+    companion object {
+        private const val TAG = "MlkitAnalyzer"
+    }
+
     private val scanner: BarcodeScanner
     private var callback: Consumer<String>? = null
 
@@ -37,7 +41,6 @@ class MlkitAnalyzer : BaseAnalyzer {
 
     @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(image: ImageProxy) {
-        Log.d("MlkitAnalyzer", "analyze")
         val mediaImage = image.image
         if (mediaImage != null) {
             val inputImage = InputImage.fromMediaImage(mediaImage, image.imageInfo.rotationDegrees)
@@ -47,6 +50,8 @@ class MlkitAnalyzer : BaseAnalyzer {
                     callback?.accept(it.first().rawValue)
                     Log.d("MlkitAnalyzer", it.first().rawValue.orEmpty())
                 }
+            }.addOnFailureListener {
+                Log.e(TAG, "扫码中出现错误", it)
             }.addOnCompleteListener {
                 image.close()
             }

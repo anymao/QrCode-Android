@@ -1,17 +1,17 @@
 package com.anymore.qrcode.wechat.impl
 
 import android.content.Context
-import android.util.Log
 import androidx.camera.core.ImageProxy
 import androidx.core.util.Consumer
 import com.anymore.auto.AutoService
 import com.anymore.qrcode.core.BaseAnalyzer
+import com.anymore.qrcode.core.util.Logger
 import com.anymore.qrcode.wechat.scanner.WeChatScanner
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.opencv.core.CvType
+import org.opencv.android.Utils
 import org.opencv.core.Mat
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
@@ -36,7 +36,7 @@ class WeChatAnalyzer : BaseAnalyzer {
 
         fun init(context: Context) {
             if (initialized && fileMap.size == files.size) {
-                Log.d(TAG, "WeChatAnalyzer 已经初始化完成")
+                Logger.d(TAG, "WeChatAnalyzer 已经初始化完成")
                 return
             }
             checkModelFiles(context)
@@ -46,18 +46,18 @@ class WeChatAnalyzer : BaseAnalyzer {
         private fun checkModelFiles(context: Context) {
             GlobalScope.launch(Dispatchers.IO) {
                 val startTime = System.currentTimeMillis()
-                Log.d(TAG, "开始检查模型文件#" + Thread.currentThread().name)
+                Logger.d(TAG, "开始检查模型文件#" + Thread.currentThread().name)
                 val dir = File(context.filesDir, "wechat-scanner-model")
                 if (!dir.exists()) {
                     if (!dir.mkdirs()) {
-                        Log.e(TAG, "创建模型目录失败!")
+                        Logger.e(TAG, "创建模型目录失败!")
                         return@launch
                     }
                 }
                 files.forEach {
                     val file = File(dir, it)
                     if (!file.exists() || file.length() == 0L) {
-                        Log.d(TAG, "模型文件<$it>需要复制")
+                        Logger.d(TAG, "模型文件<$it>需要复制")
                         file.outputStream().use { os ->
                             context.assets.open(it).use { `is` ->
                                 `is`.copyTo(os)
@@ -66,7 +66,7 @@ class WeChatAnalyzer : BaseAnalyzer {
                     }
                     fileMap[it] = file.absolutePath
                 }
-                Log.d(TAG, "初始化模型成功，耗时:${System.currentTimeMillis() - startTime} ms")
+                Logger.d(TAG, "初始化模型成功，耗时:${System.currentTimeMillis() - startTime} ms")
                 initialized = true
             }
         }
@@ -82,7 +82,7 @@ class WeChatAnalyzer : BaseAnalyzer {
         }
         scanner = WeChatScanner(
             requireNotNull(fileMap[detect_pro]),
-            requireNotNull(fileMap[detect_pro]),
+            requireNotNull(fileMap[detect_model]),
             requireNotNull(fileMap[sr_pro]),
             requireNotNull(fileMap[sr_model])
         )
@@ -93,20 +93,21 @@ class WeChatAnalyzer : BaseAnalyzer {
     }
 
     override fun analyze(image: ImageProxy) {
-        val result = scanner.detectAndDecode(gray(image), ArrayList())
-        if (!result.isNullOrEmpty()) {
-            Log.d(TAG, result.first())
-            callback?.accept(result.first())
+        try {
+            val start = System.currentTimeMillis()
+            val mat = Mat()
+            Utils.bitmapToMat(image.toBitmap(), mat)
+            val result = scanner.detectAndDecode(mat, ArrayList())
+            if (!result.isNullOrEmpty()) {
+                Logger.d(TAG, result.first())
+                callback?.accept(result.first())
+                Logger.v(TAG, "解码耗时:${System.currentTimeMillis() - start} ms")
+            }
+        } catch (e: Throwable) {
+            Logger.e(TAG, "扫码中出现错误", e)
+        } finally {
+            image.close()
         }
-        image.close()
     }
 
-    private fun gray(image: ImageProxy): Mat {
-        val planeProxy = image.planes
-        val width = image.width
-        val height = image.height
-        val yPlane = planeProxy[0].buffer
-        val yPlaneStep = planeProxy[0].rowStride
-        return Mat(height, width, CvType.CV_8UC1, yPlane, yPlaneStep.toLong())
-    }
 }

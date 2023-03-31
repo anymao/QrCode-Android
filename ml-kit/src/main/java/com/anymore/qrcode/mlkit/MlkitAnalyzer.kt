@@ -1,11 +1,11 @@
 package com.anymore.qrcode.mlkit
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.camera.core.ImageProxy
 import androidx.core.util.Consumer
 import com.anymore.auto.AutoService
 import com.anymore.qrcode.core.BaseAnalyzer
+import com.anymore.qrcode.core.util.Logger
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -43,15 +43,17 @@ class MlkitAnalyzer : BaseAnalyzer {
     override fun analyze(image: ImageProxy) {
         val mediaImage = image.image
         if (mediaImage != null) {
+            val start = System.currentTimeMillis()
             val inputImage = InputImage.fromMediaImage(mediaImage, image.imageInfo.rotationDegrees)
             val task = scanner.process(inputImage)
             task.addOnSuccessListener {
                 if (!it.isNullOrEmpty()) {
                     callback?.accept(it.first().rawValue)
-                    Log.d("MlkitAnalyzer", it.first().rawValue.orEmpty())
+                    Logger.d("MlkitAnalyzer", it.first().rawValue.orEmpty())
+                    Logger.v(TAG, "解码耗时:${System.currentTimeMillis() - start} ms")
                 }
             }.addOnFailureListener {
-                Log.e(TAG, "扫码中出现错误", it)
+                Logger.e(TAG, "扫码中出现错误", it)
             }.addOnCompleteListener {
                 image.close()
             }

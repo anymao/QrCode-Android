@@ -1,5 +1,7 @@
 pluginManagement {
     repositories {
+        maven { url 'https://maven.aliyun.com/repository/public/' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
         // 配置HMS Core SDK的Maven仓地址。
         maven {url 'https://developer.huawei.com/repo/'}
         maven {
@@ -18,6 +20,8 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        maven { url 'https://maven.aliyun.com/repository/public/' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
         // 配置HMS Core SDK的Maven仓地址。
         maven {url 'https://developer.huawei.com/repo/'}
         maven {
@@ -39,7 +43,9 @@ include ':zxing'
 include ':ml-kit'
 include ':hms'
 
-//project(':opencv-sdk').projectDir = file(OPENCV_SDK)
 include ':opencv-android'
 include ':wechat-scanner-impl'
 include ':wechat-scanner'
+
+project(':opencv-android').projectDir = file("$OPENCV_SDK")
+

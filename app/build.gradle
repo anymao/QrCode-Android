@@ -53,6 +53,13 @@ android {
     }
 }
 
+
+autoService {
+    checkImplementation=false
+    sourceCompatibility="1.8"
+    logLevel = "VERBOSE"
+}
+
 dependencies {
 
     implementation project(":qrcode-core")

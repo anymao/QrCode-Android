@@ -10,8 +10,8 @@ cmake_minimum_required(VERSION 3.22.1)
 project("wechat-scanner")
 
 # 注意这里的路径，需要和OpenCV sdk的路径对应
-set(ocvlibs "${PROJECT_SOURCE_DIR}/../../../../opencv-android/native/libs")
-include_directories(${OpenCV_DIR}/include)
+set(ocvlibs "${OpenCV_DIR}/native/libs")
+include_directories(${OpenCV_DIR}/native/jni/include)
 
 add_library(libopencv_java4 SHARED IMPORTED)
 set_target_properties(libopencv_java4 PROPERTIES

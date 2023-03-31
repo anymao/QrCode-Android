@@ -1,17 +1,13 @@
 package com.anymore.qrcode.core
 
-import androidx.fragment.app.FragmentActivity
-
 /**
  * Created by anymore on 2023/3/3.
  */
-typealias ScanHandler = (FragmentActivity, String) -> Unit
 
 object ScanManager {
     private val handlers: MutableMap<String, ScanHandler> = HashMap()
 
-    var defaultHandler: ScanHandler = { _, _ ->
-    }
+    var defaultHandler: ScanHandler = ScanHandler.EMPTY
 
     internal fun register(session: String, handler: ScanHandler) {
         handlers[session] = handler

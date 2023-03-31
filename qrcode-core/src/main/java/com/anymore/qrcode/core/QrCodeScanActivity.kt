@@ -4,11 +4,7 @@ import android.Manifest
 import android.app.Service
 import android.content.pm.PackageManager
 import android.media.SoundPool
-import android.os.Build
-import android.os.Bundle
-import android.os.Vibrator
-import android.os.VibratorManager
-import android.util.Log
+import android.os.*
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
@@ -20,6 +16,7 @@ import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.anymore.auto.ServiceLoader
+import com.anymore.qrcode.core.util.Logger
 import com.anymore.qrcode.core.view.ViewFinderView
 import java.util.concurrent.Executors
 
@@ -51,7 +48,7 @@ class QrCodeScanActivity : AppCompatActivity() {
         if (option != null) {
             implAlias = option.implAlias
             session = option.session
-            Log.d(TAG, "session:$session,使用:$implAlias")
+            Logger.d(TAG, "session:$session,使用:$implAlias")
         }
         previewView = findViewById(R.id.preview_view)
         viewFinder = findViewById(R.id.view_finder)
@@ -117,9 +114,12 @@ class QrCodeScanActivity : AppCompatActivity() {
                 ServiceLoader.load<BaseAnalyzer>(implAlias)
             val analyzer = loader.requireFirstPriority()
             analyzer.register {
-                Log.d(TAG, "scan:$it")
-                doScanCompleted()
-                ScanManager.getHandler(session)(this, it)
+                Logger.d(TAG, "scan:$it")
+                runOnMainThread {
+                    stopCamera(cameraProvider)
+                    doScanCompleted()
+                    ScanManager.getHandler(session)(this, it)
+                }
             }
             imageAnalysis.setAnalyzer(executor, analyzer)
 
@@ -129,11 +129,20 @@ class QrCodeScanActivity : AppCompatActivity() {
                 // Bind use cases to camera
                 cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysis)
 
-            } catch (exc: Exception) {
-                Log.e(TAG, "Use case binding failed", exc)
+            } catch (e: Exception) {
+                Logger.e(TAG, "Use case binding failed", e)
             }
         }, ContextCompat.getMainExecutor(this))
 
+    }
+
+    private fun stopCamera(provider: ProcessCameraProvider) {
+        Logger.d(TAG,"stopCamera")
+        try {
+            provider.unbindAll()
+        } catch (e: Exception) {
+            Logger.e(TAG, "Use case binding failed", e)
+        }
     }
 
     private fun initSoundPool(): Int {
@@ -168,6 +177,14 @@ class QrCodeScanActivity : AppCompatActivity() {
         }
         if (vibrator.hasVibrator()) {
             vibrator.vibrate(345L)
+        }
+    }
+
+    private fun runOnMainThread(runnable: Runnable) {
+        if (Thread.currentThread() == Looper.getMainLooper().thread) {
+            runnable.run()
+        } else {
+            ContextCompat.getMainExecutor(this).execute(runnable)
         }
     }
 }

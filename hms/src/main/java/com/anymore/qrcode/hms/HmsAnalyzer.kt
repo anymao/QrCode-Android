@@ -1,10 +1,10 @@
 package com.anymore.qrcode.hms
 
-import android.util.Log
 import androidx.camera.core.ImageProxy
 import androidx.core.util.Consumer
 import com.anymore.auto.AutoService
 import com.anymore.qrcode.core.BaseAnalyzer
+import com.anymore.qrcode.core.util.Logger
 import com.huawei.hms.ml.scan.HmsScan
 import com.huawei.hms.ml.scan.HmsScanAnalyzer
 import com.huawei.hms.ml.scan.HmsScanAnalyzerOptions
@@ -26,7 +26,7 @@ class HmsAnalyzer : BaseAnalyzer {
     init {
         // “QRCODE_SCAN_TYPE”和“DATAMATRIX_SCAN_TYPE”表示只扫描QR和DataMatrix的码
         val options = HmsScanAnalyzerOptions.Creator()
-            .setHmsScanTypes(HmsScan.QRCODE_SCAN_TYPE, HmsScan.DATAMATRIX_SCAN_TYPE).create()
+            .setHmsScanTypes(HmsScan.QRCODE_SCAN_TYPE, HmsScan.AZTEC_SCAN_TYPE).create()
         decoder = HmsScanAnalyzer(options)
     }
 
@@ -36,13 +36,15 @@ class HmsAnalyzer : BaseAnalyzer {
 
     override fun analyze(image: ImageProxy) {
         val bitmap = image.toBitmap()
+        val start = System.currentTimeMillis()
         val task = decoder.analyzInAsyn(MLFrame.fromBitmap(bitmap))
         task.addOnSuccessListener {
             if (!it.isNullOrEmpty()) {
                 callback?.accept(it.first().originalValue)
+                Logger.v(TAG, "解码耗时:${System.currentTimeMillis() - start} ms")
             }
         }.addOnFailureListener {
-            Log.e(TAG, "扫码中出现错误", it)
+            Logger.e(TAG, "扫码中出现错误", it)
         }.addOnCompleteListener {
             image.close()
         }

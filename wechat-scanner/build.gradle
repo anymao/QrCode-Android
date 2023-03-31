@@ -16,7 +16,7 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags ""
-                arguments "-DOpenCV_DIR=" + project(':opencv-android').projectDir + "/native/jni",
+                arguments "-DOpenCV_DIR=" + project(':opencv-android').projectDir,
                         "-DANDROID_TOOLCHAIN=clang",
                         "-DANDROID_STL=c++_shared"
             }

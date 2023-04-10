@@ -2,6 +2,7 @@ plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
 }
+apply from:"../maven_publish.gradle"
 
 android {
     namespace 'com.anymore.qrcode.wechat.scanner'
@@ -46,7 +47,4 @@ android {
 
 dependencies {
     api project(":opencv-android")
-    implementation 'androidx.core:core-ktx:1.9.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.8.0'
 }

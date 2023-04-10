@@ -1,0 +1,121 @@
+apply plugin: "maven-publish"
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/${OWNER}/${REPOSITORY}")
+            credentials {
+                username = "$github_username"
+                password = "$github_token"
+            }
+        }
+//        maven {
+//            name = "local"
+//            url = "${rootDir.path}/maven"
+//        }
+    }
+    publications {
+        release(MavenPublication) {
+            groupId = GROUP_ID
+            artifactId = ARTIFACT_ID
+            version = VERSION
+            def artifactIds = ["qrcode-core": "qr-core", "wechat-scanner": "qr-wechat-native", "opencv-android": "opencv-android"]
+            pom.withXml {
+                def dependenciesNode = asNode().appendNode('dependencies')
+                def scopes = new ArrayList<Configuration>()
+                if (configurations.hasProperty("api")) {
+                    scopes.add(configurations.api)
+                }
+                if (configurations.hasProperty("implementation")) {
+                    scopes.add(configurations.implementation)
+                }
+                if (configurations.hasProperty("debugImplementation")) {
+                    scopes.add(configurations.debugImplementation)
+                }
+                if (configurations.hasProperty("releaseImplementation")) {
+                    scopes.add(configurations.releaseImplementation)
+                }
+
+                configurations.api.allDependencies.each {
+                    if (it instanceof ModuleDependency) {
+                        boolean isTransitive = ((ModuleDependency) it).transitive
+                        if (!isTransitive) {
+                            println "<<<< not transitive dependency: [${it.group}, ${it.name}, ${it.version}]"
+                            return
+                        }
+                    }
+
+                    if (it.group == "${project.rootProject.name}.libs" || it.version == 'unspecified') {
+                        if (artifactIds.containsKey(it.name)) {
+                            def version
+                            if ("opencv-android" == it.name) {
+                                final gradle = project(':opencv-android').file("gradle.properties").newDataInputStream()
+                                final properties = new Properties()
+                                properties.load(gradle)
+                                version = properties["VERSION"]
+                            } else {
+                                version = VERSION
+                            }
+                            println(">>> append api($GROUP_ID:${it.name}:$version)")
+                            def dependencyNode = dependenciesNode.appendNode('dependency')
+                            dependencyNode.appendNode('groupId', GROUP_ID)
+                            dependencyNode.appendNode('artifactId', artifactIds[it.name])
+                            dependencyNode.appendNode('version', version)
+                            dependencyNode.appendNode('scope', "api")
+                        }
+                        return
+                    }
+
+                    if (it.group && it.name && it.version) {
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', it.group)
+                        dependencyNode.appendNode('artifactId', it.name)
+                        dependencyNode.appendNode('version', it.version)
+                        dependencyNode.appendNode('scope', "api")
+                    }
+                }
+
+//                scopes.each { scope ->
+//                    scope.allDependencies.each {
+//                        if (it instanceof ModuleDependency) {
+//                            boolean isTransitive = ((ModuleDependency) it).transitive
+//                            if (!isTransitive) {
+//                                println "<<<< not transitive dependency: [${it.group}, ${it.name}, ${it.version}]"
+//                                return
+//                            }
+//                        }
+//
+//                        if (it.group == "${project.rootProject.name}.libs" || it.version == 'unspecified') {
+//                            if (artifactIds.containsKey(it.name)) {
+//                                def version
+//                                if ("opencv-android" == it.name){
+//                                    final gradle = project(':opencv-android').file("gradle.properties").newDataInputStream()
+//                                    final properties = new Properties()
+//                                    properties.load(gradle)
+//                                    version = properties["VERSION"]
+//                                }else{
+//                                    version = VERSION
+//                                }
+//                                println(">>> append ${scope.name}($GROUP_ID:${it.name}:$version)")
+//                                def dependencyNode = dependenciesNode.appendNode('dependency')
+//                                dependencyNode.appendNode('groupId', GROUP_ID)
+//                                dependencyNode.appendNode('artifactId', artifactIds[it.name])
+//                                dependencyNode.appendNode('version', version)
+//                                dependencyNode.appendNode('scope', scope.name)
+//                            }
+//                            return
+//                        }
+//
+//                        if (it.group && it.name && it.version) {
+//                            def dependencyNode = dependenciesNode.appendNode('dependency')
+//                            dependencyNode.appendNode('groupId', it.group)
+//                            dependencyNode.appendNode('artifactId', it.name)
+//                            dependencyNode.appendNode('version', it.version)
+//                            dependencyNode.appendNode('scope', scope.name)
+//                        }
+//                    }
+//                }
+            }
+        }
+    }
+}

@@ -2,6 +2,8 @@ plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
 }
+apply from:"../maven_publish.gradle"
+
 
 android {
     namespace 'com.anymore.qrcode.hms'
@@ -32,9 +34,6 @@ android {
 
 dependencies {
 
-    implementation 'androidx.core:core-ktx:1.9.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.8.0'
-    implementation 'com.huawei.hms:scanplus:2.9.0.300'
-    implementation project(path: ':qrcode-core')
+    api 'com.huawei.hms:scanplus:2.9.0.300'
+    api project(path: ':qrcode-core')
 }

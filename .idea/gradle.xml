@@ -10,11 +10,11 @@
         <option name="gradleHome" value="D:/Program Files/gradle/gradle-6.0.1" />
         <option name="modules">
           <set>
-            <option value="D:/Android/OpenCV/4.7.0/sdk" />
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/hms" />
             <option value="$PROJECT_DIR$/ml-kit" />
+            <option value="$PROJECT_DIR$/opencv-android" />
             <option value="$PROJECT_DIR$/qrcode-core" />
             <option value="$PROJECT_DIR$/wechat-scanner" />
             <option value="$PROJECT_DIR$/wechat-scanner-impl" />

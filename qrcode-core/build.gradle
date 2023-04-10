@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-parcelize'
 }
+apply from:"../maven_publish.gradle"
 
 android {
     namespace 'com.anymore.qrcode.core'

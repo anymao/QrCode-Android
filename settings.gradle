@@ -39,7 +39,6 @@ rootProject.name = "QrCode"
 include ':app'
 include ':qrcode-core'
 include ':zxing'
-//include ':opencv-sdk'
 include ':ml-kit'
 include ':hms'
 
@@ -47,5 +46,4 @@ include ':opencv-android'
 include ':wechat-scanner-impl'
 include ':wechat-scanner'
 
-project(':opencv-android').projectDir = file("$OPENCV_SDK")
-
+//project(':opencv-android').projectDir = file("$OPENCV_SDK")

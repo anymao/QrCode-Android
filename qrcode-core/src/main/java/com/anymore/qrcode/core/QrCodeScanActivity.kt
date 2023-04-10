@@ -118,7 +118,7 @@ class QrCodeScanActivity : AppCompatActivity() {
                 runOnMainThread {
                     stopCamera(cameraProvider)
                     doScanCompleted()
-                    ScanManager.getHandler(session)(this, it)
+                    ScanManager.getHandler(session).handle(this, it)
                 }
             }
             imageAnalysis.setAnalyzer(executor, analyzer)

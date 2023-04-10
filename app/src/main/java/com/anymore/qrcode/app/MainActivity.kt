@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.anymore.qrcode.core.QrCodeScanActivity
+import com.anymore.qrcode.core.ScanHandler
 import com.anymore.qrcode.core.ScanOption
 
 class MainActivity : AppCompatActivity() {
@@ -20,7 +21,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.btn_1).setOnClickListener {
             val option = ScanOption.Builder().run {
                 implAlias = "zxing"
-                handler = { activity, text ->
+                handler = ScanHandler { activity, text ->
                     Toast.makeText(activity, "[zxing:]$text", Toast.LENGTH_SHORT).show()
                     Log.d(TAG, "[zxing:]$text")
                 }
@@ -34,7 +35,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.btn_2).setOnClickListener {
             val option = ScanOption.Builder().run {
                 implAlias = "ml-kit"
-                handler = { activity, text ->
+                handler = ScanHandler { activity, text ->
                     Toast.makeText(activity, "[ml-kit:]$text", Toast.LENGTH_SHORT).show()
                     Log.d(TAG, "[ml-kit:]$text")
                 }
@@ -48,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.btn_3).setOnClickListener {
             val option = ScanOption.Builder().run {
                 implAlias = "hms"
-                handler = { activity, text ->
+                handler = ScanHandler { activity, text ->
                     Toast.makeText(activity, "[hms:]$text", Toast.LENGTH_SHORT).show()
                     Log.d(TAG, "[hms:]$text")
                 }
@@ -62,7 +63,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.btn_4).setOnClickListener {
             val option = ScanOption.Builder().run {
                 implAlias = "wechat-scanner"
-                handler = { activity, text ->
+                handler = ScanHandler { activity, text ->
                     Toast.makeText(activity, "[wechat-scanner:]$text", Toast.LENGTH_SHORT).show()
                     Log.d(TAG, "[wechat-scanner:]$text")
                 }
@@ -75,7 +76,7 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<View>(R.id.btn_5).setOnClickListener {
             val option = ScanOption.Builder().run {
-                handler = { activity, text ->
+                handler = ScanHandler { activity, text ->
                     Toast.makeText(activity, "[default:]$text", Toast.LENGTH_SHORT).show()
                     Log.d(TAG, "[default:]$text")
                 }
